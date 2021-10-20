@@ -1,0 +1,268 @@
+#include <iostream> 
+#include<ctime> 
+#include <cmath> 
+#include <fstream> 
+#include <math.h>
+
+
+
+#define _CRT_SECURE_NO_WARNINGS 
+#define _USE_MATH_DEFINES 
+#define M_PI 3.14159265358979323846 
+
+using namespace std;
+
+void quickSort(double *S, int left, int right)
+{
+	double x = S[(left + right) / 2];
+	int i = left;
+	int j = right;
+	double help;
+	do {
+		while (S[i] < x)i++;
+		while (S[j] > x)j--;
+		if (i <= j) {
+			help = S[i];
+			S[i] = S[j];
+			S[j] = help;
+			i++;
+			j--;
+		}
+
+	} while (i <= j);
+	if (left < j)quickSort(S, left, j);
+	if (i < right)quickSort(S, i, right);
+
+}
+double max(double **A,int &index) {
+	double Max = 0;
+	
+	
+	for (int j = 0; j <= 1; j++) {
+		for (int i = 0; i < 30; i++)
+		{
+			if (A[j][i] > Max) { Max = A[j][i]; index = i; }
+
+		}
+	}
+
+	
+	return Max;
+}
+
+void Kolm() {
+	ifstream out1;
+	out1.open("Uniform.txt");
+	double* U = new double[30];
+	for (int i = 0; i < 30; i++) {
+		out1 >> U[i];
+	}
+
+	quickSort(U, 0, 29);
+	double **Help = new double*[2];
+	Help[0] = new double[30];
+	Help[1] = new double[30];
+	double a, b;
+	for (int i = 1; i <= 30; i++) {
+		a = (i - 1) / 30.0;
+		b = i / 30.0;
+		Help[0][i - 1] = fabs(U[i - 1] - a);
+		Help[1][i - 1] = fabs(U[i - 1] - b);
+	}
+	int index;
+	cout << "Критерий Колмогорова: " << endl<<endl;
+	cout << "Sup :  " << max(Help, index) << endl;
+	cout << "Точка,в кот. достиг sup :  " << U[index]<<endl;
+	cout << "Dk :  " << max(Help, index)*sqrt(30) << endl;
+	cout << "k 1-eps:  " << 0.2809 << endl;
+	cout << "P-value :  " <<0.1777  << endl;
+	if (max(Help, index)*sqrt(30)< 0.2809) cout << "Основная гипотеза принимается";
+	else cout << "Основная гипотеза отвергается";
+	cout << endl << endl << endl;
+
+	out1.close();
+}
+double Nu(int j,double* U) {
+	double result=0;
+	for (int i = 0; i < 30; i++) {
+		if ((j - 1) / 5 <= U[i] < j / 5) result++;
+	}
+	return result;
+}
+void Pirson() {
+	ifstream out1;
+	out1.open("Uniform.txt");
+	double* U = new double[30];
+	for (int i = 0; i < 30; i++) {
+		out1 >> U[i];
+	}
+
+	quickSort(U, 0, 29);
+	
+	double p = 1.0 / 5;
+	double result=0;
+	for (int j = 1; j <= 5; j++) {
+
+		result +=(Nu(j,U)-30*p)*(Nu(j,U)-30*p) / (30 * p);
+
+	}
+	
+	cout << "Критерий Пирсона: " << endl << endl;
+	
+	cout << "Dhi^2 :  " << result << endl;
+	cout << "h 1-eps:  " << 13.2767 << endl;
+
+	if (result < 13.2767) cout << "Основная гипотеза принимается";
+	else cout << "Основная гипотеза отвергается";
+	cout << endl << endl << endl;
+
+	out1.close();
+}
+double SampleAverage(double *A, double N) {
+	double X = 0;
+	for (int i = 0; i < N; i++) {
+		X += A[i];
+	}
+	X /= N;
+	return X;
+}
+double S0(double *A,double N) {
+	double result=0;
+	
+	for (int i = 0; i < N; i++) {
+		result += (A[i] - SampleAverage(A,N))*(A[i] - SampleAverage(A, N));
+
+	}
+	result = 1 / (N-1) * result;
+	return result;
+}
+double S1(double *A, double N) {
+	double result = 0;
+	double a = -2;
+	for (int i = 0; i < N; i++) {
+		result += (A[i] - a)*(A[i] - a);
+
+	}
+	result = 1 / N * result;
+	return result;
+}
+void Fish() {
+	ifstream out1;
+	ifstream out2;
+	out1.open("Gauss1.txt");
+	out2.open("Gauss2.txt");
+	double* A = new double[20];
+	for (int i = 0; i < 20; i++) {
+		out1 >> A[i];
+	}
+	double* B = new double[30];
+	for (int i = 0; i < 30; i++) {
+		out2 >> B[i];
+	}
+	cout << "Критерий Фишера: " << endl << endl;
+	cout << "S0^2(X) : " << S0(A, 20)<<endl ;
+	cout << "S0^2(Y) : " << S0(B, 30)<<endl;
+	cout << "dF : " << S0(A, 20) / S0(B, 30)<<endl;
+	cout << "f1 : " <<0.350204<<endl;
+	cout << "f2 : " << 2.59874401<<endl;
+	if (0.350204 <= S0(A, 20) / S0(B, 30) <= 2.59874401) cout << "Основная гипотеза принимается";
+	else cout << "Основная гипотеза отвергается";
+	cout << endl << endl << endl;
+	
+	out1.close();
+	out2.close();
+}
+void Student() {
+	ifstream out1;
+	ifstream out2;
+	out1.open("Gauss1.txt");
+	out2.open("Gauss2.txt");
+	double* A = new double[20];
+	for (int i = 0; i < 20; i++) {
+		out1 >> A[i];
+	}
+	double* B = new double[30];
+	for (int i = 0; i < 30; i++) {
+		out2 >> B[i];
+	}
+	double z1, z2;
+	z1 = (SampleAverage(A, 20) - SampleAverage(B, 30))*sqrt(20*30)*sqrt(48);
+	z2 = sqrt(50)*sqrt(19 * S0(A, 20) + 29 * S0(B, 30));
+	cout << "Критерий Стьюдента: " << endl << endl;
+	cout << "X с чертой : " << SampleAverage(A, 20) << endl;
+	cout << "Y с чертой : " << SampleAverage(B, 30) << endl;
+	cout << "dT : " << z1/z2<<endl;	
+	cout << "quantile : " << 2.40658127 << endl;
+	if (fabs(z1 / z2)< 2.40658127) cout << "Основная гипотеза принимается";
+	else cout << "Основная гипотеза отвергается";
+	cout << endl << endl << endl;
+	out1.close();
+	out2.close();
+}
+
+void DI() {
+	ifstream out1;
+	out1.open("Gauss.txt");
+	double* A = new double[50];
+	for (int i = 0; i < 50; i++) {
+		out1 >> A[i];
+	}
+	//Квантили:
+	double tau = 2.326348;
+	double t = 2.40658;
+	double h1 =29.70668 ;
+	double h2 = 76.15389;
+	double hh1 = 28.94065;
+	double hh2 = 74.91947;
+
+
+	double X= SampleAverage(A, 50);
+	double S_0 = S0(A, 50);
+	double S_1 = S1(A, 50);
+	double a = -2;
+	double sigmakv = 0.7;
+	cout << "Доверительные интервалы: " << endl << endl;
+
+	cout << "Пункт а : " << endl;
+	cout << "X с чертой : " << X << endl;
+	cout << "tau 1-eps : " << tau << endl;
+	cout << "ДИ : " << "("<<X-tau*sqrt(sigmakv)/sqrt(50)<<","<< X + tau * sqrt(sigmakv) / sqrt(50)<<")"<< endl<<endl;
+
+	cout << "Пункт б : " << endl;
+	cout << "S0^2 : " << S_0 << endl;
+	cout << "t 1-eps : " << t << endl;
+	cout << "ДИ : " << "(" << X - t * sqrt(S_0) / sqrt(50) << "," << X + t * sqrt(sigmakv) / sqrt(50) << ")" << endl<<endl;
+	
+	cout << "Пункт в : " << endl;
+	cout << "S1^2 : " << S_1 << endl;
+	cout << "h1 : " << h1 << endl;
+	cout << "h2 : " << h2 << endl;
+	cout << "ДИ : " << "(" <<50*S_1/h2 << "," <<50*S_1/h1  << ")" << endl << endl;
+
+	cout << "Пункт г : " << endl;
+	cout << "S^2 : " << S_0*49/50 << endl;
+	cout << "hh1 : " << hh1 << endl;
+	cout << "hh2 : " << hh2 << endl;
+	cout << "ДИ : " << "(" << 50 * S_0 * 49 / 50 / hh2 << "," << 50 * S_0 * 49 / 50 / hh1 << ")" << endl << endl;
+	cout << endl << endl << endl;
+	out1.close();
+}
+void main()
+{
+	setlocale(LC_ALL, "Russian");
+	
+	DI();
+	Fish();	
+	Student();
+    Kolm();
+	Pirson();
+	
+	
+	
+}
+
+
+
+
+
+
